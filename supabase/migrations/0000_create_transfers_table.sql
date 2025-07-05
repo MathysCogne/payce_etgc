@@ -15,6 +15,10 @@ CREATE TABLE transfers (
   -- The transaction hash from the sponsor wallet to the recipient
   claim_tx_hash TEXT,
 
+  -- OTP for withdrawal security
+  otp_hash TEXT,
+  otp_expires_at TIMESTAMPTZ,
+
   -- 'pending' -> 'funded' -> 'claimed'
   status TEXT NOT NULL DEFAULT 'pending'
 );

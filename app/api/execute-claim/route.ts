@@ -4,6 +4,7 @@ import { createWalletClient, http, createPublicClient, parseUnits } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { USDC_MANTLE_ADDRESS } from '../../../lib/constants';
 import { erc20Abi } from '../../../lib/erc20abi';
+import { createHmac } from 'crypto';
 
 const mantleSepolia = {
   id: 5003,
@@ -14,11 +15,16 @@ const mantleSepolia = {
   },
 };
 
+function hashOtp(otp: string) {
+  const secret = process.env.OTP_SECRET || 'default-secret-for-hackathon';
+  return createHmac('sha256', secret).update(otp).digest('hex');
+}
+
 export async function POST(request: Request) {
   const supabase = createAdminClient();
-  const { claimHash, recipientAddress } = await request.json();
+  const { claimHash, recipientAddress, otpCode } = await request.json();
 
-  if (!claimHash || !recipientAddress) {
+  if (!claimHash || !recipientAddress || !otpCode) {
     return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
   }
 
@@ -40,7 +46,18 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: false, message: 'Transfer not yet funded' }, { status: 400 });
     }
     
-    // In production, you MUST verify the user's identity here.
+    // --- OTP Verification ---
+    if (!transfer.otp_hash || !transfer.otp_expires_at) {
+        return NextResponse.json({ success: false, message: 'No OTP was requested for this transfer.' }, { status: 400 });
+    }
+    if (new Date(transfer.otp_expires_at) < new Date()) {
+        return NextResponse.json({ success: false, message: 'The verification code has expired. Please request a new one.' }, { status: 400 });
+    }
+    const userOtpHash = hashOtp(otpCode);
+    if (userOtpHash !== transfer.otp_hash) {
+        return NextResponse.json({ success: false, message: 'Invalid verification code.' }, { status: 400 });
+    }
+    // --- End OTP Verification ---
 
     const privateKey = process.env.SPONSOR_WALLET_PRIVATE_KEY;
     if (!privateKey) throw new Error('Sponsor wallet private key not configured');
@@ -71,7 +88,7 @@ export async function POST(request: Request) {
 
     const { error: updateError } = await supabase
       .from('transfers')
-      .update({ status: 'claimed', claim_tx_hash: txHash })
+      .update({ status: 'claimed', claim_tx_hash: txHash, otp_hash: null, otp_expires_at: null }) // Clear OTP after use
       .eq('claim_hash', claimHash);
 
     if (updateError) {

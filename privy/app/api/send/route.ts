@@ -7,11 +7,10 @@ const sendSchema = z.object({
   phone: z.string().min(10),
   amount: z.number().positive(),
   burnTxHash: z.string().startsWith('0x'),
-  senderDid: z.string(), // We'll get this from the client for now
+  senderDid: z.string(),
 });
 
 export async function POST(request: Request) {
-  // Use a simple public client. This bypasses server-side auth for now.
   const supabase = createClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -27,6 +26,13 @@ export async function POST(request: Request) {
   const { phone, amount, burnTxHash, senderDid } = validation.data;
 
   try {
+    // Upsert the sender to ensure they exist in the users table
+    const { error: upsertError } = await supabase
+      .from('users')
+      .upsert({ privy_did: senderDid }, { onConflict: 'privy_did' });
+
+    if (upsertError) throw upsertError;
+
     const { data: recipientUser } = await supabase
       .from('users')
       .select('privy_did')

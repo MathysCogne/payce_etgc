@@ -33,7 +33,7 @@ export default function Home() {
             Log in to get started
           </Button>
         </div>
-      </div>
-    </main>
+        </div>
+      </main>
   );
 }

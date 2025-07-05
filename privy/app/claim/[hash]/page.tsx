@@ -7,8 +7,7 @@ import { Navbar } from '@/components/navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { CIRCLE_API_URL, MESSAGE_TRANSMITTER_ABI, SEPOLIA_MESSAGE_TRANSMITTER_ADDRESS } from '@/lib/constants';
+import { CIRCLE_API_URL } from '@/lib/constants';
 
 interface TransactionDetails {
   amount: number;
@@ -32,12 +31,8 @@ export default function ClaimPage() {
   const [loading, setLoading] = useState(true);
   const [attestation, setAttestation] = useState<Attestation | null>(null);
   const [attestationStatus, setAttestationStatus] = useState<AttestationStatus>('pending');
-  const { data: claimTxHash, writeContractAsync, isPending: isClaiming } = useWriteContract();
-  
-  const { isLoading: isConfirming, isSuccess: isConfirmed } =
-    useWaitForTransactionReceipt({
-      hash: claimTxHash,
-    });
+  const [isClaiming, setIsClaiming] = useState(false);
+  const [isConfirmed, setIsConfirmed] = useState(false);
 
   useEffect(() => {
     async function fetchTransactionDetails() {
@@ -66,7 +61,7 @@ export default function ClaimPage() {
 
     const interval = setInterval(async () => {
       try {
-        const response = await fetch(`${CIRCLE_API_URL}/v2/messages?transactionHash=${hash}`);
+        const response = await fetch(`${CIRCLE_API_URL}/v2/messages?sourceTransactionHash=${hash}`);
         const data = await response.json();
         
         // Find the correct message in the array
@@ -88,7 +83,7 @@ export default function ClaimPage() {
     }, 5000); // Poll every 5 seconds
 
     return () => clearInterval(interval);
-  }, [hash, attestationStatus, transaction]);
+  }, [hash, transaction?.status]);
 
   useEffect(() => {
     async function markAsClaimedInDB() {
@@ -114,12 +109,38 @@ export default function ClaimPage() {
       toast.error('Cannot claim at this moment.');
       return;
     }
-    await writeContractAsync({
-      address: SEPOLIA_MESSAGE_TRANSMITTER_ADDRESS,
-      abi: MESSAGE_TRANSMITTER_ABI,
-      functionName: 'receiveMessage',
-      args: [attestation.message, attestation.attestation],
-    });
+    setIsClaiming(true);
+    try {
+      // Call our new backend route to handle the minting
+      const mintResponse = await fetch('/api/cctp/mint', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(attestation),
+      });
+
+      const mintResult = await mintResponse.json();
+      if (!mintResponse.ok) throw new Error(mintResult.error || 'Minting failed');
+      
+      toast.success(`Minting successful! Tx: ${mintResult.txHash}. Now updating database.`);
+
+      // Update our database to mark as claimed
+      await fetch(`/api/claim/${hash}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ privyDid: user.id, userWalletAddress: user.wallet.address }),
+      });
+      
+      toast.success('Funds claimed and status updated!');
+      if (transaction) {
+        setTransaction({ ...transaction, status: 'claimed' });
+      }
+      setIsConfirmed(true);
+
+    } catch (error: any) {
+      toast.error(error.message || 'An error occurred during claim.');
+    } finally {
+      setIsClaiming(false);
+    }
   };
 
 
@@ -130,8 +151,7 @@ export default function ClaimPage() {
     if (transaction.status !== 'pending') return { text: `Already ${transaction.status}`, disabled: true };
     if (attestationStatus === 'pending') return { text: 'Waiting for Attestation...', disabled: true };
     if (attestationStatus === 'error') return { text: 'Attestation Failed', disabled: true };
-    if (isClaiming) return { text: 'Confirm in wallet...', disabled: true };
-    if (isConfirming) return { text: 'Claiming funds...', disabled: true };
+    if (isClaiming) return { text: 'Claiming funds...', disabled: true };
     if (isConfirmed) return { text: 'Claimed!', disabled: true };
     return { text: 'Claim Now', disabled: false, action: handleClaim };
   }

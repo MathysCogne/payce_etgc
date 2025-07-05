@@ -64,9 +64,12 @@ export function SendForm() {
         functionName: 'depositForBurn',
         args: [
           amountInSmallestUnit,
-          0, // Destination domain for Ethereum Mainnet (replace if needed)
-          zeroAddress, // Placeholder for recipient, will be handled off-chain
+          0, // Destination domain for Ethereum Sepolia
+          zeroAddress, // Placeholder for mintRecipient
           SEPOLIA_USDC_ADDRESS,
+          zeroAddress, // destinationCaller
+          BigInt(0), // maxFee
+          0, // minFinalityThreshold (uint32 is a number)
         ],
       });
 

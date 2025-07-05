@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner';
 import { usePrivy } from '@privy-io/react-auth';
 import { SendConfirmationDialog } from '@/components/SendConfirmationDialog';
+import { useRouter } from 'next/navigation';
 
 const sendSchema = z.object({
   phone: z.string().min(10, { message: 'Phone number must be at least 10 digits.' }),
@@ -21,6 +22,7 @@ type SendFormValues = z.infer<typeof sendSchema>;
 
 export function SendForm() {
   const { user } = usePrivy();
+  const router = useRouter();
   const [isConfirming, setIsConfirming] = useState(false);
   const [formValues, setFormValues] = useState<SendFormValues | null>(null);
 
@@ -43,12 +45,36 @@ export function SendForm() {
     setIsConfirming(true);
   }
 
-  const handleSuccess = (txHash: string) => {
-    // Here, we could also make an API call to our backend to save the transaction details
-    // For now, we'll just show a success message and close the dialog
-    toast.success(`Transaction sent successfully! Hash: ${txHash}`);
+  const handleSuccess = async (txHash: `0x${string}`) => {
     setIsConfirming(false);
-    reset();
+    toast.info('Saving transaction to our database...');
+
+    try {
+      const response = await fetch('/api/cctp/burn', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: formValues?.amount,
+          recipientPhoneNumber: formValues?.phone,
+          senderDid: user?.id,
+          burnTxHash: txHash,
+        }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to save transaction.');
+      }
+
+      toast.success(`Transaction saved! You can now share this link to claim: /claim/${txHash}`);
+      reset();
+      // Optionally redirect to the claim page or a transactions page
+      router.push(`/claim/${txHash}`);
+
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || 'Failed to save transaction.');
+    }
   };
 
   return (
@@ -86,6 +112,7 @@ export function SendForm() {
           onClose={() => setIsConfirming(false)}
           onSuccess={handleSuccess}
           amount={formValues.amount}
+          recipientPhoneNumber={formValues.phone}
         />
       )}
     </>

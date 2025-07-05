@@ -111,26 +111,23 @@ export default function ClaimPage() {
     }
     setIsClaiming(true);
     try {
-      // Call our new backend route to handle the minting
-      const mintResponse = await fetch('/api/cctp/mint', {
+      // Call our new backend route to handle the minting AND the final transfer
+      const claimResponse = await fetch('/api/cctp/claim', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(attestation),
+        body: JSON.stringify({
+          message: attestation.message,
+          attestation: attestation.attestation,
+          claimerAddress: user.wallet.address,
+          txHash: hash,
+        }),
       });
 
-      const mintResult = await mintResponse.json();
-      if (!mintResponse.ok) throw new Error(mintResult.error || 'Minting failed');
+      const claimResult = await claimResponse.json();
+      if (!claimResponse.ok) throw new Error(claimResult.error || 'Claiming failed');
       
-      toast.success(`Minting successful! Tx: ${mintResult.txHash}. Now updating database.`);
+      toast.success(`Funds claimed successfully! Final Tx: ${claimResult.finalTxHash}`);
 
-      // Update our database to mark as claimed
-      await fetch(`/api/claim/${hash}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ privyDid: user.id, userWalletAddress: user.wallet.address }),
-      });
-      
-      toast.success('Funds claimed and status updated!');
       if (transaction) {
         setTransaction({ ...transaction, status: 'claimed' });
       }

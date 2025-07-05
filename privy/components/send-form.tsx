@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { usePrivy } from '@privy-io/react-auth';
-import { SendConfirmationDialog } from '@/components/SendConfirmationDialog';
+import { usePayce, TransferStep } from '@/hooks/usePayce';
 import { useRouter } from 'next/navigation';
 
 const sendSchema = z.object({
@@ -20,76 +20,51 @@ const sendSchema = z.object({
 
 type SendFormValues = z.infer<typeof sendSchema>;
 
+const stepToTitle: Record<TransferStep, string> = {
+  idle: 'Send',
+  approving: 'Approving Spend...',
+  burning: 'Sending (Burning)...',
+  'waiting-attestation': 'Waiting for Attestation...',
+  minting: 'Finishing (Minting)...',
+  completed: 'Completed!',
+  error: 'Error!',
+};
+
 export function SendForm() {
   const { user } = usePrivy();
   const router = useRouter();
-  const [isConfirming, setIsConfirming] = useState(false);
-  const [formValues, setFormValues] = useState<SendFormValues | null>(null);
+  const { currentStep, logs, error, executeTransfer, burnTxHash, reset } = usePayce();
 
   const {
     register,
     handleSubmit,
     formState: { errors, isValid },
-    reset,
   } = useForm<SendFormValues>({
     resolver: zodResolver(sendSchema),
     mode: 'onChange',
   });
 
-  function onSubmit(data: SendFormValues) {
-    if (!user) {
-      toast.error('Please log in to send funds.');
+  const handleTransfer = async (data: SendFormValues) => {
+    if (!user?.id) {
+      toast.error('User not authenticated.');
       return;
     }
-    setFormValues(data);
-    setIsConfirming(true);
-  }
-
-  const handleSuccess = async (txHash: `0x${string}`) => {
-    setIsConfirming(false);
-    toast.info('Saving transaction to our database...');
-
-    try {
-      const response = await fetch('/api/cctp/burn', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: formValues?.amount,
-          recipientPhoneNumber: formValues?.phone,
-          senderDid: user?.id,
-          burnTxHash: txHash,
-        }),
-      });
-
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to save transaction.');
-      }
-
-      toast.success(`Transaction saved! You can now share this link to claim: /claim/${txHash}`);
-      reset();
-      // Optionally redirect to the claim page or a transactions page
-      router.push(`/claim/${txHash}`);
-
-    } catch (error: any) {
-      console.error(error);
-      toast.error(error.message || 'Failed to save transaction.');
-    }
+    await executeTransfer(data.phone, data.amount.toString(), user.id);
   };
+  
+  const isTransacting = currentStep !== 'idle' && currentStep !== 'completed' && currentStep !== 'error';
 
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <CardTitle>Send USDC</CardTitle>
-          <CardDescription>
-            Send USDC cross-chain to anyone with just a phone number.
-            <br />
-            (From Sepolia to Arbitrum Sepolia)
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <Card>
+      <CardHeader>
+        <CardTitle>Send USDC</CardTitle>
+        <CardDescription>
+          From Sepolia to Arbitrum Sepolia. The Circle backend will handle all transactions.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {currentStep === 'idle' ? (
+          <form onSubmit={handleSubmit(handleTransfer)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="phone">Recipient's Phone Number</Label>
               <Input id="phone" placeholder="+1 555-555-5555" {...register('phone')} />
@@ -104,17 +79,24 @@ export function SendForm() {
               Send
             </Button>
           </form>
-        </CardContent>
-      </Card>
-      {isConfirming && formValues && (
-        <SendConfirmationDialog
-          open={isConfirming}
-          onClose={() => setIsConfirming(false)}
-          onSuccess={handleSuccess}
-          amount={formValues.amount}
-          recipientPhoneNumber={formValues.phone}
-        />
-      )}
-    </>
+        ) : (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-center">{stepToTitle[currentStep]}</h3>
+            <div className="h-48 p-2 border rounded-md bg-gray-50 overflow-y-auto text-xs font-mono">
+              {logs.map((log, i) => <p key={i}>{log}</p>)}
+            </div>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {currentStep === 'completed' && burnTxHash && (
+                <Button onClick={() => router.push(`/claim/${burnTxHash}`)}>
+                    Go to Claim Page
+                </Button>
+            )}
+            <Button onClick={reset} disabled={isTransacting} variant="outline" className="w-full">
+                Start New Transfer
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 } 

@@ -1,0 +1,1 @@
+export const USDC_MANTLE_ADDRESS = '0x09Bc4E0D864854c6AFbE6d2ea9127AcA4Ac0d808' as const; 

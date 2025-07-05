@@ -1,4 +1,4 @@
-import { getUsdcBalance, USDC_MANTLE_CONTRACT } from './usdc'
+import { getUsdcBalance } from './usdc'
 
 // Fonction pour formatter une adresse (affichage tronqué)
 export function formatAddress(address: string): string {

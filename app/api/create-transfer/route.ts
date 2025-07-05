@@ -34,11 +34,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
   
-  const claimUrl = `${process.env.NEXT_PUBLIC_APP_URL}/claim/${claim_hash}`;
+  const claimUrl = `claim/${claim_hash}`;
   const smsMessage = `You have received ${amount} USDC. Click here to claim: ${claimUrl}`;
 
   try {
     await sendSMS(recipientPhone, smsMessage);
+    console.log('SMS sent successfully');
     return NextResponse.json({ success: true, claimHash: claim_hash });
   } catch (smsError) {
     console.error('Failed to send SMS:', smsError);

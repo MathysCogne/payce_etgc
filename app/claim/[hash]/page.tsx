@@ -52,8 +52,8 @@ export default function ClaimPage({ params }: { params: Promise<ClaimPageParams>
         } else {
           setError('Transfer not found.');
         }
-      } catch (e: any) {
-        setError(e.message || 'Failed to fetch transfer details.');
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : 'Failed to fetch transfer details.');
       } finally {
         setLoading(false);
       }
@@ -78,9 +78,10 @@ export default function ClaimPage({ params }: { params: Promise<ClaimPageParams>
       
       toast.success('Code sent to your phone!');
       setStep('otp_sent');
-    } catch (e: any) {
+    } catch (e: unknown) {
       toast.dismiss();
-      toast.error(e.message || 'Could not send verification code.');
+      const errorMessage = e instanceof Error ? e.message : 'Could not send verification code.';
+      toast.error(errorMessage);
     } finally {
       setIsProcessing(false);
     }
@@ -110,9 +111,10 @@ export default function ClaimPage({ params }: { params: Promise<ClaimPageParams>
       } else {
         toast.error(result.message || 'Claim failed.');
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       toast.dismiss();
-      toast.error(e.message || 'An error occurred during claim.');
+      const errorMessage = e instanceof Error ? e.message : 'An error occurred during claim.';
+      toast.error(errorMessage);
     } finally {
       setIsProcessing(false);
     }
@@ -121,7 +123,7 @@ export default function ClaimPage({ params }: { params: Promise<ClaimPageParams>
   const renderInitialStep = () => (
     <>
       <CardHeader>
-        <CardTitle className="text-3xl">You've Received a Payment!</CardTitle>
+        <CardTitle className="text-3xl">You&apos;ve Received a Payment!</CardTitle>
         <CardDescription>You have received {transfer?.amount} USDC.</CardDescription>
       </CardHeader>
       <CardContent>

@@ -1,32 +1,36 @@
 export async function sendSMS(phone: string, message: string) {
+  const form = new URLSearchParams({
+    to: phone.replace(/\D/g, ''), // Clean the phone number
+    text: message,
+    p: process.env.SMS77_API_KEY || '',
+    json: '1',
+  });
+
   try {
-    const response = await fetch('https://textbelt.com/text', {
+    const res = await fetch('https://gateway.sms77.io/api/sms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        phone,
-        message,
-        key: process.env.TEXTBELT_API_KEY || '',
-      }),
+      body: form,
     });
 
-    const data = await response.json();
-    
-    if (!data.success) {
-      // Log the detailed error from Textbelt but throw a generic error
-      console.error('Textbelt error:', data.error);
-      throw new Error('Failed to send SMS via external provider.');
+    const data = await res.json();
+    if (data.success !== '100') {
+      console.error('sms77 error:', data);
+      throw new Error('Failed to send SMS via sms77.io');
     }
-
+    
+    console.log('SMS sent successfully via sms77.io', data);
     return data;
-
-  } catch (error) {
-    console.error('Error sending SMS:', error);
-    // Re-throw the error to be caught by the calling API route
-    throw error;
+  } catch (err) {
+    console.error('Error sending SMS via sms77:', err);
+    throw err;
   }
 }
 
-// The function to generate a verification code seems to have been removed.
-// If you need it again, it can be re-added here.
-// export const generateVerificationCode = () => { ... };
+/**
+ * This function is kept to resolve an import error on an unused page.
+ * The core OTP logic is handled in the `/api/send-otp` route.
+ */
+export function generateVerificationCode(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}

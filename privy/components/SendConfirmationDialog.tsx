@@ -16,6 +16,7 @@ import { parseUnits } from 'viem';
 
 import { useTokenApproval } from '@/hooks/useTokenApproval';
 import { useTokenMessenger } from '@/hooks/useTokenMessenger';
+import { usePrivy } from '@privy-io/react-auth';
 import {
   APP_HOLDING_WALLET_ADDRESS,
   SEPOLIA_TOKEN_MESSENGER_ADDRESS,
@@ -26,12 +27,14 @@ import {
 interface SendConfirmationDialogProps {
   open: boolean;
   onClose: () => void;
-  onSuccess: (txHash: string) => void;
+  onSuccess: (txHash: `0x${string}`) => void; // Changed to accept the hash
   amount: number;
+  recipientPhoneNumber: string;
 }
 
-export function SendConfirmationDialog({ open, onClose, onSuccess, amount }: SendConfirmationDialogProps) {
+export function SendConfirmationDialog({ open, onClose, onSuccess, amount, recipientPhoneNumber }: SendConfirmationDialogProps) {
   const { address } = useAccount();
+  const { user } = usePrivy();
   const [isApproving, setIsApproving] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [approvalTxHash, setApprovalTxHash] = useState<`0x${string}` | undefined>();
@@ -78,12 +81,11 @@ export function SendConfirmationDialog({ open, onClose, onSuccess, amount }: Sen
     setIsSending(true);
     try {
       const hash = await depositForBurn(amount, APP_HOLDING_WALLET_ADDRESS as `0x${string}`, SEPOLIA_USDC_ADDRESS);
-      toast.success('Burn transaction sent!');
-      onSuccess(hash);
+      toast.success('Burn transaction sent successfully! Now saving to DB...');
+      onSuccess(hash); // Pass the hash to the parent component
     } catch (e) {
       console.error(e);
       toast.error('Burn transaction failed.');
-    } finally {
       setIsSending(false);
     }
   };

@@ -11,13 +11,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Vérifier que la clé API est configurée
+    const apiKey = process.env.TEXTBELT_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: 'SMS service not configured' },
+        { status: 500 }
+      );
+    }
+
     const res = await fetch('https://textbelt.com/text', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         phone,
         message,
-        key: '3ddede00ac34894e706dd2bfb92ea1cc5740d18bY5ml9SgcrL9tnfYCVs7CHtKTc',
+        key: apiKey,
       }),
     });
 

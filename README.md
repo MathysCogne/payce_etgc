@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Payce 💸
 
-## Getting Started
+**Send crypto to anyone, anywhere, with just a phone number.**
 
-First, run the development server:
+_Submission for the ETHGlobal Cannes Hackathon (Privy & Mantle Tracks)_
+
+---
+
+## The Problem
+
+Crypto is powerful, but it's not easy. Asking a friend for their 42-character wallet address is intimidating. Explaining gas fees, seed phrases, and network configurations to a newcomer is a non-starter. We need a way to make sending crypto as simple as sending a Venmo or a text message.
+
+## The Solution: Payce
+
+Payce is a web application that bridges this gap. It allows any crypto user to send USDC on the Mantle network to anyone in the world using only their phone number.
+
+**For the recipient, the experience is magic.** They receive a text message with a link. They can log in with just their email, and a secure, non-custodial wallet is instantly created for them behind the scenes thanks to **Privy**. They can then claim their funds without ever needing to understand gas fees, thanks to our **Mantle**-powered Sponsor Wallet.
+
+### Key Features
+
+- **Phone Number Transfers**: No more `0x...` addresses. Just enter a phone number and an amount.
+- **Gas-less for Recipients**: Recipients don't need native tokens (MNT) to withdraw their funds. Our Sponsor Wallet handles the gas fees.
+- **Seamless Onboarding with Privy**: New users can create a secure, self-custody wallet just by logging in with their email or a social account. No complex setup required.
+- **Secure by Design**: OTP verification via SMS ensures that only the rightful owner of the phone number can claim the funds.
+- **Fast & Cheap Transactions**: Built on **Mantle** to ensure transfers are quick and affordable.
+
+## How to Run This Project Locally
+
+### Prerequisites
+
+- Node.js (v18 or later)
+- pnpm
+- A Supabase project for the database
+- A Textbelt account for SMS notifications
+- A Privy account for authentication
+
+### 1. Clone the repository
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone [your-repo-url]
+cd payce_etgc
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install dependencies
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Set up environment variables
 
-## Learn More
+Create a `.env.local` file in the root of the project by copying the example:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+cp .env.example .env.local
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+### 4. Set up the database
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Go to the SQL Editor in your Supabase dashboard and execute the script found in:
+`supabase/migrations/0000_create_transfers_table.sql`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This will create the necessary `transfers` table.
+
+### 5. Run the development server
+
+```bash
+pnpm dev
+```
+
+The application should now be running on [http://localhost:3000](http://localhost:3000).
+
+---
+
+## The Team
+
+-  **Emre Dedemoglu**
+-  **Mathys Cogné-Foucault**

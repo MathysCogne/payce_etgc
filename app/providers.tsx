@@ -4,7 +4,19 @@ import { PrivyProvider } from '@privy-io/react-auth';
 import { WagmiProvider } from '@privy-io/wagmi';
 import { wagmiConfig } from '@/lib/wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { mantle } from 'wagmi/chains';
+
+const mantleSepolia = {
+  id: 5003,
+  name: 'Mantle Sepolia Testnet',
+  nativeCurrency: { name: 'MNT', symbol: 'MNT', decimals: 18 },
+  rpcUrls: {
+    default: { http: ['https://rpc.sepolia.mantle.xyz'] },
+  },
+  blockExplorers: {
+    default: { name: 'Mantle Sepolia Explorer', url: 'https://explorer.sepolia.mantle.xyz' },
+  },
+  testnet: true,
+};
 
 const queryClient = new QueryClient();
 
@@ -21,8 +33,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
         },
-        defaultChain: mantle,
-        supportedChains: [mantle]
+        defaultChain: mantleSepolia,
+        supportedChains: [mantleSepolia]
       }}
     >
       <QueryClientProvider client={queryClient}>

@@ -67,14 +67,16 @@ export function useUsdc(): UseUsdcReturn {
 }
 
 interface UseUsdcBalanceReturn {
-  balance: string | null;
+  formattedBalance: string | null;
+  rawBalance: string | null;
   loading: boolean;
   error: string | null;
   refreshBalance: () => void;
 }
 
 export function useUsdcBalance(address: string | undefined): UseUsdcBalanceReturn {
-  const [balance, setBalance] = useState<string | null>(null);
+  const [formattedBalance, setFormattedBalance] = useState<string | null>(null);
+  const [rawBalance, setRawBalance] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -89,8 +91,8 @@ export function useUsdcBalance(address: string | undefined): UseUsdcBalanceRetur
 
     try {
       const fetchedBalance = await getUsdcBalance(address);
-      const formattedBalance = parseFloat(fetchedBalance).toFixed(2);
-      setBalance(formattedBalance);
+      setFormattedBalance(parseFloat(fetchedBalance).toFixed(2));
+      setRawBalance(fetchedBalance);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch balance';
       setError(errorMessage);
@@ -104,7 +106,8 @@ export function useUsdcBalance(address: string | undefined): UseUsdcBalanceRetur
   }, [fetchBalance]);
 
   return {
-    balance,
+    formattedBalance,
+    rawBalance,
     loading,
     error,
     refreshBalance: fetchBalance,

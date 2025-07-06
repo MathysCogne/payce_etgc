@@ -1,28 +1,25 @@
 export async function sendSMS(phone: string, message: string) {
-  const form = new URLSearchParams({
-    to: phone.replace(/\D/g, ''), // Clean the phone number
-    text: message,
-    p: process.env.SMS77_API_KEY || '',
-    json: '1',
-  });
-
   try {
-    const res = await fetch('https://gateway.sms77.io/api/sms', {
+    const res = await fetch('https://textbelt.com/text', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: form,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: phone,
+        message: message,
+        key: process.env.TEXTBELT_API_KEY || 'textbelt', // Utilise la clé de test par défaut si non définie
+      }),
     });
 
     const data = await res.json();
-    if (data.success !== '100') {
-      console.error('sms77 error:', data);
-      throw new Error('Failed to send SMS via sms77.io');
+    if (!data.success) {
+      console.error('Textbelt error:', data);
+      throw new Error(`Failed to send SMS via Textbelt: ${data.error || 'Unknown error'}`);
     }
     
-    console.log('SMS sent successfully via sms77.io', data);
+    console.log('SMS sent successfully via Textbelt', data);
     return data;
   } catch (err) {
-    console.error('Error sending SMS via sms77:', err);
+    console.error('Error sending SMS via Textbelt:', err);
     throw err;
   }
 }

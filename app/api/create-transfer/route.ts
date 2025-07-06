@@ -35,7 +35,9 @@ export async function POST(request: Request) {
   }
   
   const claimUrl = `claim/${claim_hash}`;
-  const smsMessage = `You have received ${amount} USDC. Click here to claim: ${claimUrl}`;
+  // const smsMessage = `You have received ${amount} USDC. Click here to claim: ${claimUrl}`;
+  const smsMessage = `You have received ${amount} USDC.`;
+
 
   try {
     await sendSMS(recipientPhone, smsMessage);

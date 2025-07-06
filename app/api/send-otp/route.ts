@@ -48,7 +48,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    await sendSMS(transfer.recipient_phone_number, `Your Payce verification code is: ${otp}. It will expire in 10 minutes.`);
+    await sendSMS(transfer.recipient_phone_number, `payce : Your Payce verification code is: ${otp}. It will expire in 10 minutes.`);
     return NextResponse.json({ success: true });
   } catch (smsError) {
     console.error('Failed to send OTP SMS:', smsError);

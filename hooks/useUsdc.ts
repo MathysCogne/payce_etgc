@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { sendUsdc, getUsdcBalance, waitForTransaction, isValidAddress } from '@/lib/usdc'
 import { usePrivy } from '@privy-io/react-auth'
 
@@ -64,4 +64,49 @@ export function useUsdc(): UseUsdcReturn {
     error,
     clearError
   }
+}
+
+interface UseUsdcBalanceReturn {
+  balance: string | null;
+  loading: boolean;
+  error: string | null;
+  refreshBalance: () => void;
+}
+
+export function useUsdcBalance(address: string | undefined): UseUsdcBalanceReturn {
+  const [balance, setBalance] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchBalance = useCallback(async () => {
+    if (!address || !isValidAddress(address)) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const fetchedBalance = await getUsdcBalance(address);
+      const formattedBalance = parseFloat(fetchedBalance).toFixed(2);
+      setBalance(formattedBalance);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch balance';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [address]);
+
+  useEffect(() => {
+    fetchBalance();
+  }, [fetchBalance]);
+
+  return {
+    balance,
+    loading,
+    error,
+    refreshBalance: fetchBalance,
+  };
 }

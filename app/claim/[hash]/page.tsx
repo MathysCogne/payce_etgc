@@ -3,11 +3,15 @@
 import { useState, useEffect, use } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { createClient } from '@/lib/supabase/client';
-import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Toaster, toast } from 'sonner';
+import { ArrowRight, CheckCircle2, ShieldCheck, Gift, Home } from 'lucide-react';
+import { CodeInput } from '@/components/custom/CodeInput';
+import Link from 'next/link';
+import Confetti from 'react-confetti';
+
 
 type Transfer = {
   amount: number;
@@ -23,13 +27,14 @@ interface ClaimPageParams {
 
 export default function ClaimPage({ params }: { params: Promise<ClaimPageParams> }) {
   const { hash } = use(params);
-  const { ready, authenticated, user } = usePrivy();
+  const { ready, authenticated, user, login } = usePrivy();
   const [transfer, setTransfer] = useState<Transfer | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState<ClaimStep>('initial');
   const [otp, setOtp] = useState('');
+  const [showConfetti, setShowConfetti] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
@@ -108,6 +113,7 @@ export default function ClaimPage({ params }: { params: Promise<ClaimPageParams>
       if (result.success) {
         toast.success(`Funds sent! Tx: ${result.txHash.slice(0,10)}...`);
         setStep('claimed');
+        setShowConfetti(true); // Trigger confetti on success
       } else {
         toast.error(result.message || 'Claim failed.');
       }
@@ -122,45 +128,45 @@ export default function ClaimPage({ params }: { params: Promise<ClaimPageParams>
 
   const renderInitialStep = () => (
     <>
-      <CardHeader>
-        <CardTitle className="text-3xl">You&apos;ve Received a Payment!</CardTitle>
-        <CardDescription>You have received {transfer?.amount} USDC.</CardDescription>
+      <CardHeader className="items-center text-center pb-0">
+        <Gift className="w-20 h-20 mb-4 text-blue-500" />
+        <CardTitle className="text-3xl font-black uppercase">You've Received a Payment!</CardTitle>
       </CardHeader>
-      <CardContent>
-        {ready && authenticated ? (
-          <Button 
+      <CardContent className="grid gap-6 pt-2">
+        <div className="text-center">
+            <p className="text-7xl font-black text-black">
+                ${transfer?.amount}
+            </p>
+            <p className="text-2xl font-bold text-zinc-500">USDC</p>
+        </div>
+        <Button 
             onClick={handleSendOtp} 
             disabled={isProcessing}
-            className="w-full h-12 text-lg"
+            className="w-full h-14 text-lg font-bold rounded-full bg-black text-white hover:bg-zinc-800"
           >
-            {isProcessing ? 'Sending Code...' : `Claim ${transfer?.amount} USDC`}
+            {isProcessing ? 'Sending Code...' : `Claim Now`}
+            <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
-        ) : (
-          <p>Please connect your wallet to claim your funds.</p>
-        )}
       </CardContent>
     </>
   );
   
   const renderOtpStep = () => (
     <>
-      <CardHeader>
-        <CardTitle>Enter Verification Code</CardTitle>
+      <CardHeader className="items-center text-center">
+        <ShieldCheck className="w-20 h-20 mb-4 text-blue-500" />
+        <CardTitle className="text-3xl font-black uppercase">Enter Verification Code</CardTitle>
         <CardDescription>We sent a 6-digit code to your phone. Please enter it below.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Input 
-          type="tel"
-          maxLength={6}
-          placeholder="123456"
-          value={otp}
-          onChange={(e) => setOtp(e.target.value)}
-          className="text-center text-2xl h-14 tracking-widest"
+        <CodeInput 
+            length={6}
+            onComplete={setOtp}
         />
         <Button 
           onClick={handleClaim} 
           disabled={isProcessing || otp.length !== 6}
-          className="w-full h-12 text-lg"
+          className="w-full h-14 text-lg font-bold rounded-full bg-black text-white hover:bg-zinc-800"
         >
           {isProcessing ? 'Claiming...' : `Verify & Claim`}
         </Button>
@@ -169,15 +175,16 @@ export default function ClaimPage({ params }: { params: Promise<ClaimPageParams>
   );
 
   const renderClaimedStep = () => (
-     <CardHeader>
-        <CardTitle className="text-green-500">Funds Claimed!</CardTitle>
+     <CardHeader className="items-center text-center">
+        <CheckCircle2 className="w-20 h-20 mb-4 text-green-500" />
+        <CardTitle className="text-3xl font-black uppercase text-green-500">Funds Claimed!</CardTitle>
         <CardDescription>These funds have been successfully transferred to your wallet.</CardDescription>
       </CardHeader>
   );
 
   const renderContent = () => {
-    if (loading) return <p className="p-6">Loading transfer details...</p>;
-    if (error) return <p className="p-6 text-red-500">{error}</p>;
+    if (loading) return <div className="p-6 text-center">Loading transfer details...</div>;
+    if (error) return <div className="p-6 text-center text-red-500">{error}</div>;
     
     switch(step) {
       case 'initial': return renderInitialStep();
@@ -188,11 +195,16 @@ export default function ClaimPage({ params }: { params: Promise<ClaimPageParams>
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-zinc-900">
-      <Header />
+    <div className="min-h-screen bg-yellow-100 dark:bg-yellow-900/50 text-black">
+      {showConfetti && <Confetti recycle={false} />}
+      <Link href="/" passHref>
+        <Button variant="outline" className="fixed top-4 right-4 h-12 rounded-full bg-white border-2 border-black">
+            <Home className="h-5 w-5" />
+        </Button>
+      </Link>
       <Toaster richColors />
-      <main className="flex items-center justify-center py-20 px-4">
-        <Card className="w-full max-w-md text-center shadow-lg">
+      <main className="flex items-center justify-center min-h-screen px-4">
+        <Card className="w-full max-w-md border-2 border-black bg-white text-center">
           {renderContent()}
         </Card>
       </main>

@@ -2,14 +2,13 @@
 
 export function Hero() {
   return (
-    <section className="text-center max-w-2xl mx-auto mt-12 px-4">
-      <h1 className="text-4xl sm:text-5xl font-bold leading-tight">
-        Crypto reimagined for{" "}
-        <span className="text-blue-500">everyday use.</span>
+    <section className="max-w-3xl text-left">
+      <h1 className="text-6xl sm:text-8xl font-black uppercase tracking-tighter">
+        Send & Receive Money,
+        <span className="block">For Real.</span>
       </h1>
-      <p className="text-muted-foreground mt-4 text-lg">
-        Send and receive crypto using just a phone number. Fast, secure,
-        and intuitive transfers.
+      <p className="text-zinc-800 mt-6 text-lg max-w-xl">
+        Receive money in your bank account instantly with just a phone number. Fast, transparent and made in Europe.
       </p>
     </section>
   );

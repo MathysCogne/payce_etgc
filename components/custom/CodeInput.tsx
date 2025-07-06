@@ -74,7 +74,7 @@ export function CodeInput({ length, onComplete, className = "" }: CodeInputProps
           onChange={(e) => handleChange(i, e.target.value)}
           onKeyDown={(e) => handleKeyDown(i, e)}
           onPaste={handlePaste}
-          className="w-12 h-12 text-center text-lg font-semibold border border-gray-300 dark:border-gray-600 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-colors"
+          className="w-16 h-20 text-center text-3xl font-bold border-2 border-black rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-zinc-100"
         />
       ))}
     </div>

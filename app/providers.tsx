@@ -28,7 +28,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         appearance: {
           theme: 'light',
           accentColor: '#676FFF',
-          logo: 'https://toixyqionpecsgljqkje.supabase.co/storage/v1/object/public/img//logo.svg',
+          logo: 'https://toixyqionpecsgljqkje.supabase.co/storage/v1/object/public/img//ChatGPT%20Image%206%20juil.%202025,%2000_46_41.png',
         },
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',

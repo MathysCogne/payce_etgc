@@ -2,18 +2,11 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { createWalletClient, http, createPublicClient, parseUnits } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { USDC_MANTLE_ADDRESS } from '../../../lib/constants';
-import { erc20Abi } from '../../../lib/erc20abi';
+import { USDC_MANTLE_ADDRESS, mantle } from '@/lib/constants';
+import { erc20Abi } from '@/lib/erc20abi';
 import { createHmac } from 'crypto';
 
-const mantleSepolia = {
-  id: 5003,
-  name: 'Mantle Sepolia Testnet',
-  nativeCurrency: { name: 'MNT', symbol: 'MNT', decimals: 18 },
-  rpcUrls: {
-    default: { http: ['https://rpc.sepolia.mantle.xyz'] },
-  },
-};
+const IS_OTP_ENABLED = process.env.NEXT_PUBLIC_OTP_ENABLED !== 'false';
 
 function hashOtp(otp: string) {
   const secret = process.env.OTP_SECRET || 'default-secret-for-hackathon';
@@ -24,7 +17,7 @@ export async function POST(request: Request) {
   const supabase = createAdminClient();
   const { claimHash, recipientAddress, otpCode } = await request.json();
 
-  if (!claimHash || !recipientAddress || !otpCode) {
+  if (!claimHash || !recipientAddress || (IS_OTP_ENABLED && !otpCode)) {
     return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
   }
 
@@ -47,15 +40,17 @@ export async function POST(request: Request) {
     }
     
     // --- OTP Verification ---
-    if (!transfer.otp_hash || !transfer.otp_expires_at) {
-        return NextResponse.json({ success: false, message: 'No OTP was requested for this transfer.' }, { status: 400 });
-    }
-    if (new Date(transfer.otp_expires_at) < new Date()) {
-        return NextResponse.json({ success: false, message: 'The verification code has expired. Please request a new one.' }, { status: 400 });
-    }
-    const userOtpHash = hashOtp(otpCode);
-    if (userOtpHash !== transfer.otp_hash) {
-        return NextResponse.json({ success: false, message: 'Invalid verification code.' }, { status: 400 });
+    if (IS_OTP_ENABLED) {
+        if (!transfer.otp_hash || !transfer.otp_expires_at) {
+            return NextResponse.json({ success: false, message: 'No OTP was requested for this transfer.' }, { status: 400 });
+        }
+        if (new Date(transfer.otp_expires_at) < new Date()) {
+            return NextResponse.json({ success: false, message: 'The verification code has expired. Please request a new one.' }, { status: 400 });
+        }
+        const userOtpHash = hashOtp(otpCode);
+        if (userOtpHash !== transfer.otp_hash) {
+            return NextResponse.json({ success: false, message: 'Invalid verification code.' }, { status: 400 });
+        }
     }
     // --- End OTP Verification ---
 
@@ -66,12 +61,12 @@ export async function POST(request: Request) {
     
     const walletClient = createWalletClient({
       account,
-      chain: mantleSepolia,
+      chain: mantle,
       transport: http(),
     });
 
     const publicClient = createPublicClient({
-        chain: mantleSepolia,
+        chain: mantle,
         transport: http()
     })
 

@@ -1,9 +1,7 @@
 import { createWalletClient, createPublicClient, http, parseUnits, formatUnits } from 'viem'
 import { mantle } from 'viem/chains'
 import { privateKeyToAccount } from 'viem/accounts'
-
-// USDC Contract Address on Mantle Mainnet (bridged via Axelar)
-export const USDC_MANTLE_CONTRACT = '0x09Bc4E0D864854c6AFbE6d2ea9127AcA4Ac0d808' as const
+import { USDC_MANTLE_ADDRESS } from './constants'
 
 // USDC ABI (minimal pour transfer et balanceOf)
 export const USDC_ABI = [
@@ -74,7 +72,7 @@ export function createUsdcWalletClient(privateKey: string) {
 export async function getUsdcBalance(address: string): Promise<string> {
   try {
     const balance = await publicClient.readContract({
-      address: USDC_MANTLE_CONTRACT,
+      address: USDC_MANTLE_ADDRESS,
       abi: USDC_ABI,
       functionName: 'balanceOf',
       args: [address as `0x${string}`]
@@ -102,7 +100,7 @@ export async function sendUsdc(
     
     // Effectuer le transfert
     const txHash = await walletClient.writeContract({
-      address: USDC_MANTLE_CONTRACT,
+      address: USDC_MANTLE_ADDRESS,
       abi: USDC_ABI,
       functionName: 'transfer',
       args: [toAddress as `0x${string}`, amountInUnits]

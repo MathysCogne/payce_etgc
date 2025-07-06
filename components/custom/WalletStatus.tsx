@@ -12,9 +12,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogIn, LogOut, Copy, Download } from "lucide-react";
+import { LogIn, LogOut, Copy, Download, DollarSign, Gem } from "lucide-react";
 import { toast } from "sonner";
 import { useMntBalanceInUsd } from "@/hooks/useMntBalance";
+import { useUsdcBalance } from "@/hooks/useUsdc";
 
 export function WalletStatus() {
   const {
@@ -26,9 +27,10 @@ export function WalletStatus() {
     exportWallet,
   } = usePrivy();
 
-  const { balanceInUsd, isLoading: isBalanceLoading } = useMntBalanceInUsd(
-    user?.wallet?.address as `0x${string}` | undefined
-  );
+  const walletAddress = user?.wallet?.address as `0x${string}` | undefined;
+
+  const { balanceInUsd, isLoading: isMntBalanceLoading } = useMntBalanceInUsd(walletAddress);
+  const { formattedBalance: usdcBalance, loading: isUsdcBalanceLoading } = useUsdcBalance(walletAddress);
 
   const socialAccount = user?.linkedAccounts.find(
     (account) => "profilePictureUrl" in account
@@ -88,14 +90,17 @@ export function WalletStatus() {
                 </AvatarFallback>
               </Avatar>
               <span className="font-mono font-bold">
-                {isBalanceLoading ? "..." : `$${balanceInUsd}`}
+                {isUsdcBalanceLoading ? "..." : `$${usdcBalance} `}
+                <span className="text-xs text-zinc-500 font-mono">
+                  {"USDC"}
+                </span>
               </span>
             </div>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"
-          className="border-2 border-black w-64"
+          className="border-2 border-black w-64 shadow-[4px_4px_0px_#000]"
         >
           <DropdownMenuLabel>
             <div className="flex flex-col">
@@ -106,6 +111,27 @@ export function WalletStatus() {
               </span>
             </div>
           </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+           <DropdownMenuGroup>
+                <DropdownMenuItem disabled>
+                    <div className="flex justify-between w-full items-center">
+                        <div className="flex items-center gap-2 text-zinc-500">
+                            <DollarSign className="h-4 w-4" />
+                            <span>USDC</span>
+                        </div>
+                        <span className="font-bold">{isUsdcBalanceLoading ? '...' : `$${usdcBalance}`}</span>
+                    </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem disabled>
+                    <div className="flex justify-between w-full items-center">
+                       <div className="flex items-center gap-2 text-zinc-500">
+                            <Gem className="h-4 w-4" />
+                            <span>MNT</span>
+                        </div>
+                        <span className="font-bold">{isMntBalanceLoading ? '...' : `$${balanceInUsd}`}</span>
+                    </div>
+                </DropdownMenuItem>
+           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem onClick={copyAddress}>

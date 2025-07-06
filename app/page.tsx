@@ -45,12 +45,12 @@ export default function Home() {
           <Button
             size="lg"
             variant="outline"
-            className="h-14 px-8 text-lg font-bold rounded-full border-2 border-black bg-transparent hover:bg-black hover:text-white"
+            className="h-14 cursor-pointer px-8 text-lg font-bold rounded-full border-2 border-black bg-transparent hover:bg-black hover:text-white shadow-[8px_8px_0px_#000] active:shadow-none active:translate-x-1 active:translate-y-1 transition-all"
             onClick={handleActionClick}
             disabled={!ready}
              // C'est normal que sa soit le meme texte
           > 
-             {"Refurb Your Friends Now !"}
+             {"Send Money Now"}
               <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         </div>

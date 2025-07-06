@@ -13,6 +13,8 @@ import Link from 'next/link';
 import Confetti from 'react-confetti';
 
 
+const IS_OTP_ENABLED = process.env.NEXT_PUBLIC_OTP_ENABLED === 'true';
+
 type Transfer = {
   amount: number;
   recipient_phone_number: string;
@@ -126,10 +128,18 @@ export default function ClaimPage({ params }: { params: Promise<ClaimPageParams>
     }
   };
 
+  const handleClaimOrOtp = () => {
+    if (IS_OTP_ENABLED) {
+      handleSendOtp();
+    } else {
+      handleClaim();
+    }
+  };
+  
   const renderInitialStep = () => (
     <>
       <CardHeader className="items-center text-center pb-0">
-        <Gift className="w-20 h-20 mb-4 text-blue-500" />
+        <Gift className="w-20 h-20 mb-4 text-blue-500 mx-auto" />
         <CardTitle className="text-3xl font-black uppercase">You've Received a Payment!</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-6 pt-2">
@@ -140,11 +150,11 @@ export default function ClaimPage({ params }: { params: Promise<ClaimPageParams>
             <p className="text-2xl font-bold text-zinc-500">USDC</p>
         </div>
         <Button 
-            onClick={handleSendOtp} 
+            onClick={handleClaimOrOtp} 
             disabled={isProcessing}
-            className="w-full h-14 text-lg font-bold rounded-full bg-black text-white hover:bg-zinc-800"
+            className="w-full h-14 text-lg font-bold rounded-full bg-black text-white hover:bg-zinc-800 shadow-[4px_4px_0px_#999] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all"
           >
-            {isProcessing ? 'Sending Code...' : `Claim Now`}
+            {isProcessing ? 'Processing...' : `Claim Now`}
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
       </CardContent>
@@ -154,7 +164,7 @@ export default function ClaimPage({ params }: { params: Promise<ClaimPageParams>
   const renderOtpStep = () => (
     <>
       <CardHeader className="items-center text-center">
-        <ShieldCheck className="w-20 h-20 mb-4 text-blue-500" />
+        <ShieldCheck className="w-20 h-20 mb-4 text-blue-500 mx-auto" />
         <CardTitle className="text-3xl font-black uppercase">Enter Verification Code</CardTitle>
         <CardDescription>We sent a 6-digit code to your phone. Please enter it below.</CardDescription>
       </CardHeader>
@@ -166,7 +176,7 @@ export default function ClaimPage({ params }: { params: Promise<ClaimPageParams>
         <Button 
           onClick={handleClaim} 
           disabled={isProcessing || otp.length !== 6}
-          className="w-full h-14 text-lg font-bold rounded-full bg-black text-white hover:bg-zinc-800"
+          className="w-full h-14 text-lg font-bold rounded-full bg-black text-white hover:bg-zinc-800 shadow-[4px_4px_0px_#999] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all"
         >
           {isProcessing ? 'Claiming...' : `Verify & Claim`}
         </Button>
@@ -176,7 +186,7 @@ export default function ClaimPage({ params }: { params: Promise<ClaimPageParams>
 
   const renderClaimedStep = () => (
      <CardHeader className="items-center text-center">
-        <CheckCircle2 className="w-20 h-20 mb-4 text-green-500" />
+        <CheckCircle2 className="w-20 h-20 mb-4 text-green-500 mx-auto" />
         <CardTitle className="text-3xl font-black uppercase text-green-500">Funds Claimed!</CardTitle>
         <CardDescription>These funds have been successfully transferred to your wallet.</CardDescription>
       </CardHeader>
@@ -204,7 +214,7 @@ export default function ClaimPage({ params }: { params: Promise<ClaimPageParams>
       </Link>
       <Toaster richColors />
       <main className="flex items-center justify-center min-h-screen px-4">
-        <Card className="w-full max-w-md border-2 border-black bg-white text-center">
+        <Card className="w-full max-w-md border-2 border-black bg-white text-center shadow-[8px_8px_0px_#000]">
           {renderContent()}
         </Card>
       </main>

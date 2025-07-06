@@ -8,12 +8,13 @@ import { parseUnits } from "viem";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CountrySelect } from "@/components/custom/CountrySelect";
-import { USDC_MANTLE_ADDRESS, SPONSOR_WALLET_ADDRESS } from "@/lib/constants";
+import { USDC_MANTLE_ADDRESS, SPONSOR_WALLET_ADDRESS, mantle } from "@/lib/constants";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useUsdcBalance } from "@/hooks/useUsdc";
+import { ArrowLeft, User } from "lucide-react";
 
 
 const mantleSepolia = {
@@ -30,20 +31,43 @@ export function SendCard() {
   const { chain } = useAccount();
   const { switchChain } = useSwitchChain();
   const { data: hash, sendTransaction, isPending, isSuccess, error: transactionError } = useSendTransaction();
+  const { rawBalance: usdcBalance } = useUsdcBalance(user?.wallet?.address);
 
   const [phone, setPhone] = useState("");
   const [countryCode, setCountryCode] = useState("+1");
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState("0");
   const [isNotifying, setIsNotifying] = useState(false);
+
+  const handleSetMax = () => {
+    if (usdcBalance) {
+      setAmount(usdcBalance);
+    }
+  };
+
+  const handleKeyPress = (key: string) => {
+    if (amount === "0" && key !== ".") {
+      setAmount(key);
+    } else {
+      setAmount(amount + key);
+    }
+  };
+
+  const handleDelete = () => {
+    if (amount.length > 1) {
+      setAmount(amount.slice(0, -1));
+    } else {
+      setAmount("0");
+    }
+  };
 
   const handleSubmit = async () => {
     if (!amount || !phone) {
       toast.error("Please fill in all fields.");
       return;
     }
-    if (chain?.id !== mantleSepolia.id) {
-      toast.error("Please switch to the Mantle Testnet to continue.");
-      switchChain({ chainId: mantleSepolia.id });
+    if (chain?.id !== mantle.id) {
+      toast.error("Please switch to the Mantle Mainnet to continue.");
+      switchChain({ chainId: mantle.id });
       return;
     }
     if (!SPONSOR_WALLET_ADDRESS || SPONSOR_WALLET_ADDRESS.includes('...')) {
@@ -109,7 +133,7 @@ export function SendCard() {
 
   if (!authenticated || !user?.wallet) {
     return (
-      <Card className="w-full max-w-md mx-auto border-2 border-black bg-white">
+      <Card className="w-full max-w-md mx-auto border-2 border-black bg-white shadow-[8px_8px_0px_#000]">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-black uppercase">Connect Wallet</CardTitle>
           <CardDescription>
@@ -121,72 +145,45 @@ export function SendCard() {
   }
   
   return (
-    <Card className="w-full max-w-md mx-auto border-2 border-black bg-white">
-      <CardHeader className="text-center">
-        <CardTitle className="text-3xl font-black uppercase">Send Money</CardTitle>
+    <Card className="w-full max-w-sm mx-auto border-2 border-black bg-white shadow-[8px_8px_0px_#000]">
+      <CardHeader className="text-center pb-0">
+        <CardTitle className="text-2xl font-black uppercase">Create a Magic Link</CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-6">
-        <div className="grid gap-2 text-center">
-          <Label htmlFor="amount" className="text-sm font-bold uppercase tracking-wider text-zinc-500">Amount</Label>
-          <div className="relative mx-auto">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-4xl font-bold text-zinc-400">$</span>
+      <CardContent className="grid gap-4 p-4">
+        <div className="text-center py-2">
+            <span className="text-6xl font-black text-black">${amount}</span>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+            {['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0'].map((key) => (
+                <Button key={key} variant="ghost" className="h-14 text-2xl font-bold" onClick={() => handleKeyPress(key)}>
+                    {key}
+                </Button>
+            ))}
+            <Button variant="ghost" className="h-14 text-2xl font-bold" onClick={handleDelete}>
+                <ArrowLeft />
+            </Button>
+        </div>
+
+        <div className="grid gap-2">
+          <Label className="font-bold uppercase tracking-wider text-zinc-500">To</Label>
+          <div className="flex items-center space-x-2 rounded-xl border-2 border-black p-2 bg-white focus-within:ring-2 focus-within:ring-black focus-within:ring-offset-2 transition-all">
+            <CountrySelect value={countryCode} onChange={setCountryCode} />
+            <div className="w-px h-6 bg-zinc-300" />
             <Input 
-              id="amount"
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="15.00"
-              className="w-56 h-20 after:text-[150px]  font-black text-center pl-12 pr-4 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+                type="tel"
+                placeholder="(123) 456-7890"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-medium w-full"
             />
           </div>
         </div>
 
-        <Separator className="bg-black" />
-
-        <div className="grid gap-2">
-            <Label className="font-bold uppercase tracking-wider text-zinc-500">To</Label>
-            <div className="flex items-center space-x-4 rounded-xl border-2 border-black p-2 bg-zinc-100">
-              <Avatar className="h-12 w-12 border-2 border-black">
-                <AvatarImage src="/placeholder-user.jpg" />
-                <AvatarFallback>M</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 flex items-center">
-                <CountrySelect value={countryCode} onChange={setCountryCode} />
-                <Input 
-                    type="tel"
-                    placeholder="234 324 7676"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                />
-              </div>
-            </div>
-        </div>
-
-        <div className="grid gap-2">
-            <Label className="font-bold uppercase tracking-wider text-zinc-500">From</Label>
-             <div className="flex items-center space-x-4 rounded-xl border-2 border-black p-4 bg-zinc-100">
-              <Avatar className="h-12 w-12 border-2 border-black">
-                <AvatarImage src={`https://avatar.vercel.sh/${user.wallet.address}.png`} />
-                <AvatarFallback>
-                    {user.wallet.address.slice(2,4)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 space-y-1">
-                <p className="text-sm font-medium leading-none">
-                    {user.wallet.address.slice(0,6)}...{user.wallet.address.slice(-4)}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                    Connected Wallet
-                </p>
-              </div>
-            </div>
-        </div>
-
         <Button
-          className="w-full h-14 text-lg font-bold rounded-full bg-black text-white hover:bg-zinc-800"
+          className="w-full h-12 text-lg font-bold rounded-full bg-black text-white hover:bg-zinc-800 shadow-[4px_4px_0px_#999] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all"
           onClick={handleSubmit}
-          disabled={isPending || isNotifying || !phone.trim() || !amount}
+          disabled={isPending || isNotifying || !phone.trim() || parseFloat(amount) <= 0}
         >
           {isPending ? "Sending..." : (isNotifying ? "Notifying..." : `Confirm Payment`)}
         </Button>

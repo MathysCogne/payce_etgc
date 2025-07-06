@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Toaster, toast } from 'sonner';
-import { ArrowRight, CheckCircle2, ShieldCheck, Gift, Home } from 'lucide-react';
+import { ArrowRight, CheckCircle2, ShieldCheck, Gift, Home, CreditCard } from 'lucide-react';
 import { CodeInput } from '@/components/custom/CodeInput';
 import Link from 'next/link';
 import Confetti from 'react-confetti';
+import { VirtualCard } from '@/components/custom/VirtualCard';
 
 
 const IS_OTP_ENABLED = process.env.NEXT_PUBLIC_OTP_ENABLED === 'true';
@@ -21,7 +22,7 @@ type Transfer = {
   status: string;
 }
 
-type ClaimStep = 'initial' | 'otp_sent' | 'claimed';
+type ClaimStep = 'initial' | 'otp_sent' | 'claimed' | 'card_generated';
 
 interface ClaimPageParams {
   hash: string;
@@ -94,6 +95,35 @@ export default function ClaimPage({ params }: { params: Promise<ClaimPageParams>
     }
   }
 
+  const handleGenerateCard = async () => {
+    setIsProcessing(true);
+    toast.loading('Generating your card...');
+
+    try {
+      const response = await fetch('/api/claim-by-card', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ claimHash: hash }),
+      });
+      const result = await response.json();
+      toast.dismiss();
+
+      if (result.success) {
+        toast.success("Card generated!");
+        setStep('card_generated');
+        setShowConfetti(true);
+      } else {
+        throw new Error(result.message || 'Failed to generate card.');
+      }
+    } catch (e: unknown) {
+      toast.dismiss();
+      const errorMessage = e instanceof Error ? e.message : 'Could not generate card.';
+      toast.error(errorMessage);
+    } finally {
+      setIsProcessing(false);
+    }
+  }
+
   const handleClaim = async () => {
     setIsProcessing(true);
     toast.loading('Verifying and claiming your funds...');
@@ -142,21 +172,32 @@ export default function ClaimPage({ params }: { params: Promise<ClaimPageParams>
         <Gift className="w-20 h-20 mb-4 text-blue-500 mx-auto" />
         <CardTitle className="text-3xl font-black uppercase">You've Received a Payment!</CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-6 pt-2">
+      <CardContent className="grid gap-4 pt-2">
         <div className="text-center">
             <p className="text-7xl font-black text-black">
                 ${transfer?.amount}
             </p>
             <p className="text-2xl font-bold text-zinc-500">USDC</p>
         </div>
-        <Button 
-            onClick={handleClaimOrOtp} 
-            disabled={isProcessing}
-            className="w-full h-14 text-lg font-bold rounded-full bg-black text-white hover:bg-zinc-800 shadow-[4px_4px_0px_#999] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all"
-          >
-            {isProcessing ? 'Processing...' : `Claim Now`}
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
+        <div className="space-y-3">
+            <Button 
+                onClick={handleClaimOrOtp} 
+                disabled={isProcessing}
+                className="w-full h-14 text-lg font-bold rounded-full bg-black text-white hover:bg-zinc-800 shadow-[4px_4px_0px_#999] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all"
+              >
+                {isProcessing ? 'Processing...' : `Claim to Wallet`}
+                <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+            <Button 
+                onClick={handleGenerateCard} 
+                disabled={isProcessing}
+                variant="outline"
+                className="w-full h-14 text-lg font-bold rounded-full border-2 border-black bg-white hover:bg-zinc-100"
+              >
+                <CreditCard className="mr-2 h-5 w-5" />
+                Generate a Card
+            </Button>
+        </div>
       </CardContent>
     </>
   );
@@ -192,6 +233,10 @@ export default function ClaimPage({ params }: { params: Promise<ClaimPageParams>
       </CardHeader>
   );
 
+  const renderCardStep = () => (
+      <VirtualCard amount={transfer?.amount || 0} />
+  )
+
   const renderContent = () => {
     if (loading) return <div className="p-6 text-center">Loading transfer details...</div>;
     if (error) return <div className="p-6 text-center text-red-500">{error}</div>;
@@ -200,6 +245,7 @@ export default function ClaimPage({ params }: { params: Promise<ClaimPageParams>
       case 'initial': return renderInitialStep();
       case 'otp_sent': return renderOtpStep();
       case 'claimed': return renderClaimedStep();
+      case 'card_generated': return renderCardStep();
       default: return null;
     }
   };

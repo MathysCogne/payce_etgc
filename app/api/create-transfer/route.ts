@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
   
-  const claimUrl = `claim/${claim_hash}`;
+  // const claimUrl = `claim/${claim_hash}`;
   // const smsMessage = `You have received ${amount} USDC. Click here to claim: ${claimUrl}`;
   const smsMessage = `You have received ${amount} USDC.`;
 

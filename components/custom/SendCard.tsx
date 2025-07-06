@@ -12,7 +12,7 @@ import { USDC_MANTLE_ADDRESS, SPONSOR_WALLET_ADDRESS, mantle } from "@/lib/const
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, User, Share2, Copy } from "lucide-react";
+import { ArrowLeft, Copy } from "lucide-react";
 
 type SendStep = 'input' | 'link_generated';
 

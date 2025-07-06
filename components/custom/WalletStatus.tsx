@@ -16,6 +16,18 @@ import { LogIn, LogOut, Copy, Download, DollarSign, Gem } from "lucide-react";
 import { toast } from "sonner";
 import { useMntBalanceInUsd } from "@/hooks/useMntBalance";
 import { useUsdcBalance } from "@/hooks/useUsdc";
+import type { User } from "@privy-io/react-auth";
+
+// Helper to get social profile picture
+const getSocialAvatar = (user: User | null) => {
+  const socialAccount = user?.linkedAccounts.find(
+    (account) => account.type !== "wallet" && 'profilePictureUrl' in account
+  );
+  if (socialAccount && 'profilePictureUrl' in socialAccount) {
+    return socialAccount.profilePictureUrl;
+  }
+  return null;
+}
 
 export function WalletStatus() {
   const {
@@ -32,13 +44,7 @@ export function WalletStatus() {
   const { balanceInUsd, isLoading: isMntBalanceLoading } = useMntBalanceInUsd(walletAddress);
   const { formattedBalance: usdcBalance, loading: isUsdcBalanceLoading } = useUsdcBalance(walletAddress);
 
-  const socialAccount = user?.linkedAccounts.find(
-    (account) => "profilePictureUrl" in account
-  );
-  
-  const avatarSrc =
-    (socialAccount as any)?.profilePictureUrl ||
-    `https://avatar.vercel.sh/${user?.wallet?.address}.png`;
+  const avatarSrc = getSocialAvatar(user) || `https://avatar.vercel.sh/${user?.wallet?.address}.png`;
 
   const copyAddress = () => {
     if (user?.wallet?.address) {

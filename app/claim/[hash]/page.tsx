@@ -5,7 +5,6 @@ import { usePrivy } from '@privy-io/react-auth';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Toaster, toast } from 'sonner';
 import { ArrowRight, CheckCircle2, ShieldCheck, Gift, Home, CreditCard } from 'lucide-react';
 import { CodeInput } from '@/components/custom/CodeInput';
@@ -30,7 +29,7 @@ interface ClaimPageParams {
 
 export default function ClaimPage({ params }: { params: Promise<ClaimPageParams> }) {
   const { hash } = use(params);
-  const { ready, authenticated, user, login } = usePrivy();
+  const { user } = usePrivy();
   const [transfer, setTransfer] = useState<Transfer | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -170,7 +169,7 @@ export default function ClaimPage({ params }: { params: Promise<ClaimPageParams>
     <>
       <CardHeader className="items-center text-center pb-0">
         <Gift className="w-20 h-20 mb-4 text-blue-500 mx-auto" />
-        <CardTitle className="text-3xl font-black uppercase">You've Received a Payment!</CardTitle>
+        <CardTitle className="text-3xl font-black uppercase">You&apos;ve Received a Payment!</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4 pt-2">
         <div className="text-center">

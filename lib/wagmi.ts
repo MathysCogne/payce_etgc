@@ -1,5 +1,5 @@
 import { http } from 'wagmi'
-import { mainnet, sepolia } from 'wagmi/chains';
+import { mainnet } from 'wagmi/chains';
 import { createConfig } from '@privy-io/wagmi';
 import { mantle } from '@/lib/constants';
 

@@ -12,37 +12,19 @@ import { USDC_MANTLE_ADDRESS, SPONSOR_WALLET_ADDRESS, mantle } from "@/lib/const
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useUsdcBalance } from "@/hooks/useUsdc";
-import { ArrowLeft, User } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
-
-const mantleSepolia = {
-  id: 5003,
-  name: 'Mantle Sepolia Testnet',
-  nativeCurrency: { name: 'MNT', symbol: 'MNT', decimals: 18 },
-  rpcUrls: {
-    default: { http: ['https://rpc.sepolia.mantle.xyz'] },
-  },
-};
 
 export function SendCard() {
   const { ready, authenticated, user } = usePrivy();
   const { chain } = useAccount();
   const { switchChain } = useSwitchChain();
   const { data: hash, sendTransaction, isPending, isSuccess, error: transactionError } = useSendTransaction();
-  const { rawBalance: usdcBalance } = useUsdcBalance(user?.wallet?.address);
 
   const [phone, setPhone] = useState("");
   const [countryCode, setCountryCode] = useState("+1");
   const [amount, setAmount] = useState("0");
   const [isNotifying, setIsNotifying] = useState(false);
-
-  const handleSetMax = () => {
-    if (usdcBalance) {
-      setAmount(usdcBalance);
-    }
-  };
 
   const handleKeyPress = (key: string) => {
     if (amount === "0" && key !== ".") {

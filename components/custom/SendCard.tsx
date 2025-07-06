@@ -12,8 +12,9 @@ import { USDC_MANTLE_ADDRESS, SPONSOR_WALLET_ADDRESS, mantle } from "@/lib/const
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, User, Share2, Copy } from "lucide-react";
 
+type SendStep = 'input' | 'link_generated';
 
 export function SendCard() {
   const { ready, authenticated, user } = usePrivy();
@@ -25,6 +26,8 @@ export function SendCard() {
   const [countryCode, setCountryCode] = useState("+1");
   const [amount, setAmount] = useState("0");
   const [isNotifying, setIsNotifying] = useState(false);
+  const [step, setStep] = useState<SendStep>('input');
+  const [claimLink, setClaimLink] = useState('');
 
   const handleKeyPress = (key: string) => {
     if (amount === "0" && key !== ".") {
@@ -84,6 +87,9 @@ export function SendCard() {
       .then(data => {
         toast.dismiss();
         if (data.success) {
+          const link = `${window.location.origin}/claim/${data.claimHash}`;
+          setClaimLink(link);
+          setStep('link_generated');
           toast.success("SMS with claim link sent!");
         } else {
           toast.error(data.message || "Failed to create transfer record.");
@@ -124,6 +130,46 @@ export function SendCard() {
         </CardHeader>
       </Card>
     );
+  }
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(claimLink);
+    toast.success("Link copied!");
+  };
+
+  if (step === 'link_generated') {
+    const shareMessage = `I've sent you $${amount} on Payce! Claim it here: ${claimLink}`;
+    
+    return (
+        <Card className="w-full max-w-sm mx-auto border-2 border-black bg-white shadow-[8px_8px_0px_#000]">
+            <CardHeader className="text-center">
+                <CardTitle className="text-2xl font-black uppercase">Share this Magic Link</CardTitle>
+                <CardDescription>
+                    Your friend can now claim ${amount} using the link below.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 p-4">
+                <div className="flex items-center space-x-2 rounded-xl border-2 border-dashed border-black p-3 bg-zinc-100">
+                    <input type="text" readOnly value={claimLink} className="w-full bg-transparent outline-none font-mono text-sm" />
+                    <Button variant="ghost" size="icon" onClick={copyLink}>
+                        <Copy className="h-5 w-5" />
+                    </Button>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                    <a href={`https://wa.me/?text=${encodeURIComponent(shareMessage)}`} target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" className="w-full">WhatsApp</Button>
+                    </a>
+                    <a href={`https://t.me/share/url?url=${encodeURIComponent(claimLink)}&text=${encodeURIComponent(shareMessage)}`} target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" className="w-full">Telegram</Button>
+                    </a>
+                    <a href={`sms:?&body=${encodeURIComponent(shareMessage)}`}>
+                        <Button variant="outline" className="w-full">Messages</Button>
+                    </a>
+                </div>
+                <Button className="w-full h-12 text-lg font-bold" onClick={() => setStep('input')}>Send Another</Button>
+            </CardContent>
+        </Card>
+    )
   }
   
   return (

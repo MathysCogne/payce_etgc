@@ -4,6 +4,9 @@
 
 _Submission for the ETHGlobal Cannes Hackathon (Privy & Mantle Tracks)_
 
+
+<img src="public/banner.png" alt="Payce" width="650" />
+
 ---
 
 ## The Problem

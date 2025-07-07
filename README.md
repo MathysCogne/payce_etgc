@@ -35,7 +35,8 @@ Payce makes sending crypto as easy as sending a text. No more complex wallet add
 
 - **📲 Phone Number Transfers**: Ditch the `0x...` addresses.
 - **⛽ Gas-Free Claims**: Recipients don't need native tokens to get their funds.
-- **🔐 Instant Wallets by Privy**: Secure, non-custodial wallets created with just an email.
+- **💳 Instant Cashout**: Redeem funds instantly to Apple Pay or your wallet via a magic link.
+- **🔐 Instant Wallets by Privy**: Secure, non-custodial wallets.
 - **🚀 Fast & Cheap**: Built on **Mantle** for quick, low-cost transactions.
 
 ---

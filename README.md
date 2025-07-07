@@ -29,7 +29,7 @@
 
 ## What is Payce?
 
-Payce makes sending crypto as easy as sending a text. No more complex wallet addresses. Just use a phone number to send USDC on the Mantle network. Newcomers get a secure, self-custody wallet created instantly via **Privy**, and can claim funds without worrying about gas fees, sponsored by our **Mantle** backend.
+Payce makes sending crypto as easy as sending a text. No more complex wallet addresses. Just use a phone number to send USDC on the Mantle network. Newcomers get a secure, self-custody wallet created instantly via **Privy**, and can claim funds without worrying about gas fees.
 
 ## ✨ Core Features
 

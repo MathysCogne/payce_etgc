@@ -15,7 +15,7 @@ export const privyConfig: PrivyClientConfig = {
     appearance: {
         theme: 'light',
         accentColor: '#676FFF',
-        logo: 'https://your-logo-url.com/logo.png',
+        logo: 'https://toixyqionpecsgljqkje.supabase.co/storage/v1/object/public/img//ChatGPT%20Image%206%20juil.%202025,%2000_46_41.png',
     },
     // Create embedded wallets for users who don't have a wallet
     embeddedWallets: {

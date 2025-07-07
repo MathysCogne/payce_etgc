@@ -8,10 +8,21 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { EthGlobalDialog } from "@/components/custom/EthGlobalDialog";
 
 export default function Home() {
   const { ready, authenticated, login } = usePrivy();
   const router = useRouter();
+  const [isEthGlobalDialogOpen, setIsEthGlobalDialogOpen] = useState(false);
+
+  useEffect(() => {
+    const hasSeenDialog = sessionStorage.getItem("ethGlobalDialogSeen");
+    if (!hasSeenDialog) {
+      setIsEthGlobalDialogOpen(true);
+      sessionStorage.setItem("ethGlobalDialogSeen", "true");
+    }
+  }, []);
 
   const handleActionClick = () => {
     if (authenticated) {
@@ -23,6 +34,10 @@ export default function Home() {
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen text-black">
+      <EthGlobalDialog
+        open={isEthGlobalDialogOpen}
+        onOpenChange={setIsEthGlobalDialogOpen}
+      />
       <div className="relative w-full md:w-1/2 bg-gradient-to-br from-pink-400 to-orange-300 flex items-start justify-center p-8 pt-16 overflow-hidden">
         <Image
           src="/logo.svg"

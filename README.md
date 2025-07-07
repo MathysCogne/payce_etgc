@@ -2,82 +2,45 @@
 
 **Send crypto to anyone, anywhere, with just a phone number.**
 
-_Submission for the ETHGlobal Cannes Hackathon (Privy & Mantle Tracks)_
-
-
-<img src="public/banner.png" alt="Payce" width="650" />
+<div align="center">
+  <img src="public/banner.png" alt="Payce Banner" width="700"/>
+</div>
 
 ---
 
-## The Problem
+<div align="center">
 
-Crypto is powerful, but it's not easy. Asking a friend for their 42-character wallet address is intimidating. Explaining gas fees, seed phrases, and network configurations to a newcomer is a non-starter. We need a way to make sending crypto as simple as sending a Venmo or a text message.
+**🏆 ETHGlobal Cannes 2025 Winner 🏆**
 
-## The Solution: Payce
+🥇 **Best Finance App** (Mantle)
+<br/>
+🥇 **Best App Using Stablecoin** (Privy)
 
-Payce is a web application that bridges this gap. It allows any crypto user to send USDC on the Mantle network to anyone in the world using only their phone number.
+</div>
 
-**For the recipient, the experience is magic.** They receive a text message with a link. They can log in with just their email, and a secure, non-custodial wallet is instantly created for them behind the scenes thanks to **Privy**. They can then claim their funds without ever needing to understand gas fees, thanks to our **Mantle**-powered Sponsor Wallet.
+---
 
-### Key Features
+<div align="center">
 
-- **Phone Number Transfers**: No more `0x...` addresses. Just enter a phone number and an amount.
-- **Gas-less for Recipients**: Recipients don't need native tokens (MNT) to withdraw their funds. Our Sponsor Wallet handles the gas fees.
-- **Seamless Onboarding with Privy**: New users can create a secure, self-custody wallet just by logging in with their email or a social account. No complex setup required.
-- **Secure by Design**: OTP verification via SMS ensures that only the rightful owner of the phone number can claim the funds.
-- **Fast & Cheap Transactions**: Built on **Mantle** to ensure transfers are quick and affordable.
+[![Live Demo](https://img.shields.io/badge/Live_Demo-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://payce-etgc.vercel.app/)
+[![ETHGlobal Showcase](https://img.shields.io/badge/ETHGlobal_Showcase-4A90E2?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyBmaWxsPSJub25lIiB2aWV3Qm94PSIwIDAgMTggMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTkgMGE5IDkgMCAxIDAgMCAxOCA5IDkgMCAwIDAgMC0xOFptMCAyLjI1YTQuNSAyLjc1IDAgMCAxIDAgNS41IDQuNSAyLjc1IDAgMCAxIDAtNS41Wm0wIDcuN2MuNzQgMCAxLjQ0LS4xMSAyLjA3LS4zM2ExLjc1IDEuNzUgMCAwIDEtMS4xMy0xLjg0Yy4wNy0uMzUuMzItLjY1LjY1LS44MWExLjc1IDEuNzUgMCAwIDEtMi4xOC0uMTdjLS4xOC4wNC0uMzcuMDYtLjU2LjA2YTIuNzUgMi43NSAwIDAgMC0yLjc1IDIuNzVjMCAuMTguMDIuMzYuMDYuNTJhMi43NSAyLjc1IDAgMCAwIDIuNzUgMS4zMmptMCAxLjgyYy0xLjQ4IDAtMi44LS41LTMuODItMS4zM2ExLjc1IDEuNzUgMCAwIDEgMS4zNi0yLjQyYy4zNC0uMDYuNjQtLjE5LjktLjM1YTIuNzUgMi43NSAwIDAgMSAzLjA2LS4wMWMuMjQuMTUuNTIuMjcuODQuMzNhMS43NSAxLjc1IDAgMCAxIDEuNDEgMi40MWMtMS4wMi44LTIuMzQgMS4zLTMuODUgMS4zWiIgZmlsbD0id2hpdGUiLz48L3N2Zz4=)](https://ethglobal.com/showcase/payce-4mwm8)
 
-## How to Run This Project Locally
+</div>
 
-### Prerequisites
+## What is Payce?
 
-- Node.js (v18 or later)
-- pnpm
-- A Supabase project for the database
-- A Textbelt account for SMS notifications
-- A Privy account for authentication
+Payce makes sending crypto as easy as sending a text. No more complex wallet addresses. Just use a phone number to send USDC on the Mantle network. Newcomers get a secure, self-custody wallet created instantly via **Privy**, and can claim funds without worrying about gas fees, sponsored by our **Mantle** backend.
 
-### 1. Clone the repository
+## ✨ Core Features
 
-```bash
-git clone [your-repo-url]
-cd payce_etgc
-```
-
-### 2. Install dependencies
-
-```bash
-pnpm install
-```
-
-### 3. Set up environment variables
-
-Create a `.env.local` file in the root of the project by copying the example:
-
-```bash
-cp .env.example .env.local
-```
-
-
-
-### 4. Set up the database
-
-Go to the SQL Editor in your Supabase dashboard and execute the script found in:
-`supabase/migrations/0000_create_transfers_table.sql`
-
-This will create the necessary `transfers` table.
-
-### 5. Run the development server
-
-```bash
-pnpm dev
-```
-
-The application should now be running on [http://localhost:3000](http://localhost:3000).
+- **📲 Phone Number Transfers**: Ditch the `0x...` addresses.
+- **⛽ Gas-Free Claims**: Recipients don't need native tokens to get their funds.
+- **🔐 Instant Wallets by Privy**: Secure, non-custodial wallets created with just an email.
+- **🚀 Fast & Cheap**: Built on **Mantle** for quick, low-cost transactions.
 
 ---
 
 ## The Team
 
--  **Emre Dedemoglu**
--  **Mathys Cogné-Foucault**
+- [Emre Dedemoglu](https://www.linkedin.com/in/emre149/)
+- [Mathys Cogné-Foucault](https://www.linkedin.com/in/mathys-cogne-foucault/)
